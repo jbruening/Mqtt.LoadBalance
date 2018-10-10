@@ -9,17 +9,15 @@ terms:
 (message) the original message published over {topic}
 
 sequence of operations:  
+
+setup:  
 load balancer subs to lb/sub/+/#  
 workers pub to lb/sub/{group}/{topic} occasionally as a 'load balancer keepalive'  
 load balancer receives pub  
 load balancer subs to {topic} if not done so  
 load balancer subs to lb/rsp/+/{topic} if not done so  
 load balancer pubs to lb/suback/{group}/{wtopic}  
-
 workers notice that load balancer is available  
-todo: loadbalancer is missing fallback  
-if the client doesn't see suback, assume no lb and subscribe to {topic}. if it does later, unsubscribe from {topic}  
-
 workers subscribe to lb/req/{topic} and lb/work/{group}/{wid}/{topic}  
 
 original message published:  
@@ -27,3 +25,11 @@ original message published:
 load balancer pub lb/req/{topic} with contents as a uuid  
 workers respond to lb/rsp/{group}/{wid}/{topic} with the uuid if they are available for work  
 the load balancer then pubs the (message) to lb/work/{group}/{wid}/{topic} to all first responding workers in each group  
+
+
+todo:
+if the client doesn't see suback, assume no lb and subscribe to {topic}. if it does later, unsubscribe from {topic}  
+
+options of different types of load balancing per group (round robin)  
+
+more 'configured' load balancer to skip the initial setup of load balancer, where it just knows the groups and topics beforehand
