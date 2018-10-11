@@ -9,9 +9,11 @@ namespace Mqtt.LoadBalancer
 {
     public class LoadBalancer
     {
-        private readonly LoadSubscriberTopic subTopic;
+        private DynamicBalancerTopic subTopic;
         internal readonly HashSet<string> Groups = new HashSet<string>();
         internal readonly Dictionary<string, TopicBalancer> Balancers = new Dictionary<string, TopicBalancer>();
+
+        public Paths Paths { get; }
 
         public string ClientId { get; set; }
         public string Address { get; set; }
@@ -27,11 +29,11 @@ namespace Mqtt.LoadBalancer
         /// </summary>
         public bool ListenForWorkers { get; set; } = true;
 
-        public LoadBalancer()
+        public LoadBalancer(Paths paths = null)
         {
-            Client = new MqttFactory().CreateManagedMqttClient();
+            Paths = paths ?? new Paths();
 
-            subTopic = new LoadSubscriberTopic(this);
+            Client = new MqttFactory().CreateManagedMqttClient();
         }
 
         public LoadBalancer WithGroupTopics(IEnumerable<GroupTopic> groupTopics)
@@ -42,6 +44,12 @@ namespace Mqtt.LoadBalancer
                 Balancers.Add(gt.Topic, new TopicBalancer(this, gt.Topic, Client));
             }
 
+            return this;
+        }
+
+        public LoadBalancer WithDynamicTopicsAndGroups()
+        {
+            subTopic = new DynamicBalancerTopic(this);
             return this;
         }
 
@@ -62,10 +70,10 @@ namespace Mqtt.LoadBalancer
         /// <summary>
         /// this just sets up the options and then runs Client.StartAsync(options)
         /// 
-        /// If you don't like the options this starts with, then you could set up the options and start the client yourself
+        /// If you don't like the MqttClientOptions options this starts with, then you could set up the options and start the client yourself
         /// </summary>
         /// <returns></returns>
-        public async Task Start()
+        public async Task StartAsync()
         {
             if (string.IsNullOrWhiteSpace(Address))
                 throw new InvalidOperationException("No address specified");

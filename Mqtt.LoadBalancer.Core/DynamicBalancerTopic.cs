@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace Mqtt.LoadBalancer
 {
-    class LoadSubscriberTopic : TopicListener
+    class DynamicBalancerTopic : TopicListener
     {
         public LoadBalancer Balancer { get; }
 
-        public LoadSubscriberTopic(LoadBalancer balancer)
-            : base("lb/sub/+/#", balancer.Client)
+        public DynamicBalancerTopic(LoadBalancer balancer)
+            : base(balancer.Paths.WorkerSubs, balancer.Client)
         {
             Balancer = balancer;
         }
@@ -19,7 +19,7 @@ namespace Mqtt.LoadBalancer
                 return;
 
             var group = wildcards[0];
-            var topic = wildcards[1];
+            var topic = e.ApplicationMessage.ConvertPayloadToString();
 
             Balancer.Groups.Add(group);
 

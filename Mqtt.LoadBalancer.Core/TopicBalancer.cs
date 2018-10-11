@@ -45,7 +45,6 @@ namespace Mqtt.LoadBalancer
 
         public LoadBalancer Balancer { get; }
 
-        private readonly string wTopic;
         private readonly OriginalTopic originalTopic;
         private readonly CanWorkTopic canWorkTopic;
 
@@ -55,14 +54,13 @@ namespace Mqtt.LoadBalancer
         public TopicBalancer(LoadBalancer balancer, string topic, IManagedMqttClient client)
         {
             Balancer = balancer;
-            wTopic = topic.Replace("+", "_").Replace("#", "_");
             originalTopic = new OriginalTopic(this, topic);
             canWorkTopic = new CanWorkTopic(this, $"lb/rsp/+/+/{topic}");
         }
 
         internal void SubAck(string group)
         {
-            Balancer.Client.PublishAsync($"lb/suback/{group}/{wTopic}");
+            Balancer.Client.PublishAsync(Balancer.Paths.GetWorkerSubAck(group), originalTopic.Topic);
         }
 
         async void OriginalTopicMessage(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs e)
