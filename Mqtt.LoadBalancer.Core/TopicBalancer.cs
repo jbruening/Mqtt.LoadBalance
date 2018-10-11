@@ -55,7 +55,7 @@ namespace Mqtt.LoadBalancer
         {
             Balancer = balancer;
             originalTopic = new OriginalTopic(this, topic);
-            canWorkTopic = new CanWorkTopic(this, $"lb/rsp/+/+/{topic}");
+            canWorkTopic = new CanWorkTopic(this, balancer.Paths.GetAvailableResp(topic));
         }
 
         internal void SubAck(string group)
@@ -65,8 +65,13 @@ namespace Mqtt.LoadBalancer
 
         async void OriginalTopicMessage(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs e)
         {
-            var topic = e.ApplicationMessage.Topic;
-            var dict = Balancer.Groups.ToDictionary(k => k, v => new TaskCompletionSource<string>());
+            var msgTopic = e.ApplicationMessage.Topic;
+            var dict = Balancer.Groups.ToDictionary(k => k, v => 
+            {
+                var tcs = new TaskCompletionSource<string>();
+                Task.Delay(5000).ContinueWith(t => tcs.TrySetCanceled());
+                return tcs;
+            });
             var guid = Guid.NewGuid();
             var guidStr = guid.ToString("N");
 
@@ -75,21 +80,20 @@ namespace Mqtt.LoadBalancer
                 if (!requests.TryAdd(guid, dict))
                     throw new Exception("guid already exists??");
 
-                //Ask for who can work
+                //Agent-based adaptive load balancing
+                await Balancer.Client.PublishAsync(Balancer.Paths.GetAvailableReq(guidStr, msgTopic)).ConfigureAwait(false);
+
                 await Task.WhenAll(dict.Select(async kvp => 
                 {
                     var group = kvp.Key;
                     var tcs = kvp.Value;
 
-                    Task.Delay(5000).ContinueWith(t => tcs.TrySetCanceled());
-
-                    await Balancer.Client.PublishAsync($"lb/req/{group}/{e.ApplicationMessage.Topic}", guidStr).ConfigureAwait(false);
                     try
                     {
                         var workerId = await tcs.Task.ConfigureAwait(false);
                         var msg = new MqttApplicationMessage
                         {
-                            Topic = $"lb/work/{group}/{workerId}/{topic}",
+                            Topic = Balancer.Paths.GetDoWork(group, workerId, msgTopic),
                             Payload = e.ApplicationMessage.Payload,
                             QualityOfServiceLevel = e.ApplicationMessage.QualityOfServiceLevel,
                             Retain = e.ApplicationMessage.Retain
@@ -112,9 +116,8 @@ namespace Mqtt.LoadBalancer
         {
             var group = wildcards[0];
             var workerId = wildcards[1];
-            var loadStr = $"lb/req/{group}/{workerId}/";
-            var realTopic = e.ApplicationMessage.Topic.Substring(loadStr.Length);
-            var guid = Guid.ParseExact(e.ApplicationMessage.ConvertPayloadToString(), "N");
+            var uuid = wildcards[2];
+            var guid = Guid.ParseExact(uuid, "N");
 
             if (requests.TryGetValue(guid, out var dict))
             {
