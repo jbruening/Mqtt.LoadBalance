@@ -12,6 +12,10 @@
     <PackageTags>mqtt load balance</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\Mqtt.LoadBalancer.Core.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MQTTnet" Version="2.8.4" />
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="2.8.4" />

@@ -41,7 +41,7 @@
 
         internal string GetAvailableResp(string topic)
             => AvailableResp
-            .Replace(MessageTopic, topic);
+            .Replace(Topic, topic);
 
         internal string GetDoWork(string group, string workerId, string msgTopic)
             => DoWork

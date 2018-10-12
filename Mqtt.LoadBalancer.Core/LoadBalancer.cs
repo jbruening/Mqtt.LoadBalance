@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Mqtt.LoadBalancer
 {
-    public class LoadBalancer
+    public class LoadBalancer : IDisposable
     {
         private DynamicBalancerTopic subTopic;
         internal readonly HashSet<string> Groups = new HashSet<string>();
@@ -24,10 +24,6 @@ namespace Mqtt.LoadBalancer
         };
 
         public IManagedMqttClient Client { get; private set; }
-        /// <summary>
-        /// whether or not this should listen for new workers on lb/sub/+/#
-        /// </summary>
-        public bool ListenForWorkers { get; set; } = true;
 
         public LoadBalancer(Paths paths = null)
         {
@@ -89,6 +85,21 @@ namespace Mqtt.LoadBalancer
                 .Build();
 
             await Client.StartAsync(moptions);
+        }
+
+        /// <summary>
+        /// unsubscribes, stops, and disposes the client
+        /// </summary>
+        public void Dispose()
+        {
+            Groups.Clear();
+            foreach (var kvp in Balancers)
+                kvp.Value.Dispose();
+            Balancers.Clear();
+
+            Client.StopAsync().Wait();
+
+            Client.Dispose();
         }
     }
 }
