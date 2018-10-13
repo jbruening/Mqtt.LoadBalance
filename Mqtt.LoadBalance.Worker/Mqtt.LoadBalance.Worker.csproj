@@ -2,19 +2,20 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Mqtt.LoadBalancer</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Justin Bruening</Authors>
+    <AssemblyName>Mqtt.LoadBalance.Worker</AssemblyName>
+    <RootNamespace>Mqtt.LoadBalance.Worker</RootNamespace>
     <Version>0.1.1-beta01</Version>
-    <Description>An mqtt client library that performs load balancing for worker mqtt clients</Description>
+    <Authors>Justin Bruening</Authors>
+    <Description>mqtt client library to act as the worker for Mqtt.LoadBalancer.Core</Description>
+    <PackageProjectUrl>https://github.com/jbruening/Mqtt.LoadBalance</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jbruening/Mqtt.LoadBalance</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>mqtt load balance</PackageTags>
-    <PackageProjectUrl>https://github.com/jbruening/Mqtt.LoadBalance</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard2.0\Mqtt.LoadBalancer.Core.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\netstandard2.0\Mqtt.LoadBalance.Worker.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Mqtt.LoadBalancer
+namespace Mqtt.LoadBalance.Worker
 {
-    public abstract class TopicListener : IDisposable
+    class TopicListener : IDisposable
     {
         protected IManagedMqttClient Client { get; }
         private readonly Regex regex;
@@ -33,11 +33,10 @@ namespace Mqtt.LoadBalancer
             if (!match.Success)
                 return;
 
-            Debug.WriteLine($"recv {e.ApplicationMessage.Topic}");
-            MqttMessageReceived(match.Groups.Cast<Group>().Skip(1).Select(o => o.Value).ToList(), e);
+            MqttMessageReceived?.Invoke(match.Groups.Cast<Group>().Skip(1).Select(o => o.Value).ToList(), e);
         }
 
-        protected abstract void MqttMessageReceived(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs e);
+        public event Action<IList<string>, MqttApplicationMessageReceivedEventArgs> MqttMessageReceived;
 
         public static Regex TopicMatcher(string sub)
         {
