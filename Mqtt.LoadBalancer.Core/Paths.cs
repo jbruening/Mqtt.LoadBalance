@@ -58,6 +58,6 @@
             => DontWork
             .Replace(Uuid, uuid)
             .Replace(Group, group)
-            .Replace(WorkerId, workerId)
+            .Replace(WorkerId, workerId);
     }
 }
