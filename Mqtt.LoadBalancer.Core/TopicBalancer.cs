@@ -98,7 +98,10 @@ namespace Mqtt.LoadBalancer
                             QualityOfServiceLevel = e.ApplicationMessage.QualityOfServiceLevel,
                             Retain = e.ApplicationMessage.Retain
                         };
-                        await Balancer.Client.PublishAsync(msg).ConfigureAwait(false);
+
+                        await Task.WhenAll(
+                            Balancer.Client.PublishAsync(Balancer.Paths.GetDontWork(guidStr, group, workerId), null, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce),
+                            Balancer.Client.PublishAsync(msg)).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {

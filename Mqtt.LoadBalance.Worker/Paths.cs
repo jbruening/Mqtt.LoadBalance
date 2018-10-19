@@ -30,6 +30,11 @@
         /// </summary>
         public string DoWork { get; set; } = "lb/work/" + Group + "/" + WorkerId + "/" + Topic;
 
+        /// <summary>
+        /// topic the worker should subscribe to to stop waiting for work
+        /// </summary>
+        public string DontWork { get; set; } = "lb/dwork/+/" + Group + "/+";
+
         internal string GetWorkerSubs(string group)
             => WorkerSubs
             .Replace(Group, group);
@@ -62,5 +67,8 @@
             var pre = DoWork.Replace(Group, group).Replace(WorkerId, workerId).Replace(Topic, "");
             return msgTopic.Substring(pre.Length);
         }
+
+        internal string GetDontWork(string group)
+            => DontWork.Replace(Group, group);
     }
 }

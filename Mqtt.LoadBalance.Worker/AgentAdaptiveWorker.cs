@@ -17,8 +17,9 @@ namespace Mqtt.LoadBalance.Worker
 
         readonly TopicListener reqTopic;
         readonly TopicListener workTopic;
+        readonly TopicListener dontWorkTopic;
 
-        volatile int working;
+        volatile string workingUuid;
 
         public AgentAdaptiveWorker(WorkerManager manager, GroupTopic groupTopic, string workerId)
             :base(manager, groupTopic, workerId)
@@ -28,6 +29,9 @@ namespace Mqtt.LoadBalance.Worker
 
             workTopic = new TopicListener(Manager.Paths.GetDoWork(Group, WorkerId, Topic), Manager.Client);
             workTopic.MqttMessageReceived += WorkTopic_MqttMessageReceived;
+
+            dontWorkTopic = new TopicListener(Manager.Paths.GetDontWork(Group), Manager.Client);
+            dontWorkTopic.MqttMessageReceived += DontWorkTopic_MqttMessageReceived;
         }
 
         private void ReqTopic_MqttMessageReceived(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs msg)
@@ -35,16 +39,34 @@ namespace Mqtt.LoadBalance.Worker
             var uuid = wildcards[0];
             var originalTopic = Manager.Paths.GetRequestTopic(uuid, msg.ApplicationMessage.Topic);
             //a request to do work.
-            var canWork = CanWork?.Invoke(this, originalTopic) ?? (DoWork != null) && working == 0;
+            if (DoWork == null)
+                return;
+
+            var canWork = (CanWork?.Invoke(this, originalTopic) ?? true) 
+                && (Interlocked.CompareExchange(ref workingUuid, uuid, null) == null);
             if (canWork)
                 Manager.Client.PublishAsync(Manager.Paths.GetAvailableResp(Group, WorkerId, uuid, originalTopic));
+        }
+
+        private void DontWorkTopic_MqttMessageReceived(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs msg)
+        {
+            var uuid = wildcards[0];
+            var worker = wildcards[1];
+            if (worker == WorkerId)
+                return; //we were chosen for work, whatever it was.
+            if (Interlocked.CompareExchange(ref workingUuid, null, uuid) == uuid)
+            {
+                //we were told to not work on uuid.
+            }
+            else
+            {
+                //told not to work on something we're not waiting for work on.
+            }
         }
 
         private async void WorkTopic_MqttMessageReceived(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs msg)
         {
             var originalTopic = Manager.Paths.GetWorkTopic(Group, WorkerId, msg.ApplicationMessage.Topic);
-
-            Interlocked.Increment(ref working);
             try
             {
                 await (DoWork?.Invoke(this, wildcards, originalTopic, msg.ApplicationMessage) ?? Task.FromResult(0));
@@ -55,7 +77,7 @@ namespace Mqtt.LoadBalance.Worker
             }
             finally
             {
-                Interlocked.Decrement(ref working);
+                Interlocked.Exchange(ref workingUuid, null);
             }
         }
 

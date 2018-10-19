@@ -29,6 +29,11 @@
         /// topic the load balancer should publish to to get a worker to start on the original message
         /// </summary>
         public string DoWork { get; set; } = "lb/work/" + Group + "/" + WorkerId + "/" + MessageTopic;
+        /// <summary>
+        /// topic the load balancer should publish to to tell any workers who said they could work that they shouldn't.
+        /// This is published at the same time as the DoWork, but without the message contents of course
+        /// </summary>
+        public string DontWork { get; set; } = "lb/dwork/" + Uuid + "/" + Group + "/" + WorkerId;
 
         internal string GetWorkerSubAck(string group)
             => WorkerSubAck
@@ -48,5 +53,11 @@
             .Replace(Group, group)
             .Replace(WorkerId, workerId)
             .Replace(MessageTopic, msgTopic);
+
+        internal string GetDontWork(string uuid, string group, string workerId)
+            => DontWork
+            .Replace(Uuid, uuid)
+            .Replace(Group, group)
+            .Replace(WorkerId, workerId)
     }
 }
