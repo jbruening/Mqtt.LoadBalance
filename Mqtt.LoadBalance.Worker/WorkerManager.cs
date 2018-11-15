@@ -24,25 +24,11 @@ namespace Mqtt.LoadBalance.Worker
 
         internal readonly List<AWorker> Workers = new List<AWorker>();
 
-        public WorkerManager(Paths paths = null)
+        public WorkerManager(Paths paths = null, IManagedMqttClient client = null)
         {
             Paths = paths ?? new Paths();
 
-            Client = new MqttFactory().CreateManagedMqttClient();
-        }
-
-        public WorkerManager WithWorker(AWorker worker)
-        {
-            Workers.Add(worker);
-            return this;
-        }
-
-        public WorkerManager WithWorkers(IEnumerable<AWorker> workers)
-        {
-            foreach (var w in workers)
-                Workers.Add(w);
-
-            return this;
+            Client = client ?? new MqttFactory().CreateManagedMqttClient();
         }
 
         /// <summary>

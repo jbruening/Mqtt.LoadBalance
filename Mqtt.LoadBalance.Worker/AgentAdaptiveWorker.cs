@@ -32,6 +32,8 @@ namespace Mqtt.LoadBalance.Worker
 
             dontWorkTopic = new TopicListener(Manager.Paths.GetDontWork(Group), Manager.Client);
             dontWorkTopic.MqttMessageReceived += DontWorkTopic_MqttMessageReceived;
+
+            manager.Workers.Add(this);
         }
 
         private void ReqTopic_MqttMessageReceived(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs msg)
