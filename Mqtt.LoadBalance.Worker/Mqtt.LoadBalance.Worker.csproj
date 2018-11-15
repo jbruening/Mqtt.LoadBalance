@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Mqtt.LoadBalance.Worker</AssemblyName>
     <RootNamespace>Mqtt.LoadBalance.Worker</RootNamespace>
-    <Version>0.1.1-beta02</Version>
+    <Version>0.1.1-beta05</Version>
     <Authors>Justin Bruening</Authors>
     <Description>mqtt client library to act as the worker for Mqtt.LoadBalancer.Core</Description>
     <PackageProjectUrl>https://github.com/jbruening/Mqtt.LoadBalance</PackageProjectUrl>
@@ -12,6 +12,8 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>mqtt load balance</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSource>True</IncludeSource>
+    <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -22,5 +24,7 @@
     <PackageReference Include="MQTTnet" Version="2.8.4" />
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="2.8.4" />
   </ItemGroup>
+
+  <Import Project="..\Mqtt.LoadBalance.Shared\Mqtt.LoadBalance.Shared.projitems" Label="Shared" />
 
 </Project>

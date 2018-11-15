@@ -60,11 +60,15 @@ namespace Mqtt.LoadBalancer
 
         internal void SubAck(string group)
         {
+            System.Diagnostics.Debug.WriteLine($"suback {group}");
+
             Balancer.Client.PublishAsync(Balancer.Paths.GetWorkerSubAck(group), originalTopic.Topic);
         }
 
         async void OriginalTopicMessage(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"original {string.Join(", ", wildcards)}");
+
             var msgTopic = e.ApplicationMessage.Topic;
             var dict = Balancer.Groups.ToDictionary(k => k, v => 
             {
@@ -117,6 +121,8 @@ namespace Mqtt.LoadBalancer
 
         void CanWorkMessage(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"canwork {string.Join(", ", wildcards)}");
+
             var group = wildcards[0];
             var workerId = wildcards[1];
             var uuid = wildcards[2];

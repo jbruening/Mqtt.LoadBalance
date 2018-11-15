@@ -20,7 +20,7 @@ namespace Mqtt.LoadBalancer
             Client = client;
             Topic = topic;
 
-            regex = TopicMatcher(Topic);
+            regex = LoadBalance.MqttRegex.TopicRegex(Topic);
 
             Debug.WriteLine($"sub {topic}");
             client.ApplicationMessageReceived += Client_ApplicationMessageReceived;
@@ -38,18 +38,6 @@ namespace Mqtt.LoadBalancer
         }
 
         protected abstract void MqttMessageReceived(IList<string> wildcards, MqttApplicationMessageReceivedEventArgs e);
-
-        public static Regex TopicMatcher(string sub)
-        {
-            sub = sub.Replace("/", "\\/") //escape slashes
-                .Replace("+", "(.+?)") //escape and capture single level wildcards
-                .Replace("#", "(.+)") //escape and capture multi-level wildcards
-                .Trim(); //no white characters
-            if (sub.EndsWith("(.+?)")) //last single-level wildcard breaks if there's no slash, so fix it.
-                sub = sub.Substring(0, sub.Length - 5) + "(.+)";
-
-            return new Regex(sub);
-        }
 
         public void Dispose()
         {

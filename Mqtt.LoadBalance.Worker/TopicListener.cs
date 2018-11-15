@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Mqtt.LoadBalance.Worker
@@ -20,7 +21,7 @@ namespace Mqtt.LoadBalance.Worker
             Client = client;
             Topic = topic;
 
-            regex = TopicMatcher(Topic);
+            regex = MqttRegex.TopicRegex(Topic);
 
             Debug.WriteLine($"sub {topic}");
             client.ApplicationMessageReceived += Client_ApplicationMessageReceived;
@@ -37,18 +38,6 @@ namespace Mqtt.LoadBalance.Worker
         }
 
         public event Action<IList<string>, MqttApplicationMessageReceivedEventArgs> MqttMessageReceived;
-
-        public static Regex TopicMatcher(string sub)
-        {
-            sub = sub.Replace("/", "\\/") //escape slashes
-                .Replace("+", "(.+?)") //escape and capture single level wildcards
-                .Replace("#", "(.+)") //escape and capture multi-level wildcards
-                .Trim(); //no white characters
-            if (sub.EndsWith("(.+?)")) //last single-level wildcard breaks if there's no slash, so fix it.
-                sub = sub.Substring(0, sub.Length - 5) + "(.+)";
-
-            return new Regex(sub);
-        }
 
         public void Dispose()
         {

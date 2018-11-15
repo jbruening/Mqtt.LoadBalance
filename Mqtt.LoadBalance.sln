@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mqtt.LoadBalancer.Core", "M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mqtt.LoadBalance.Worker", "Mqtt.LoadBalance.Worker\Mqtt.LoadBalance.Worker.csproj", "{D5F7E513-AF6C-4418-98B5-F3FB309C8776}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Mqtt.LoadBalance.Shared", "Mqtt.LoadBalance.Shared\Mqtt.LoadBalance.Shared.shproj", "{11801576-9E67-43AA-9255-B3711D16B0C1}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Mqtt.LoadBalance.Shared\Mqtt.LoadBalance.Shared.projitems*{11801576-9e67-43aa-9255-b3711d16b0c1}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
