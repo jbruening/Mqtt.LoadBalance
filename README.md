@@ -31,9 +31,12 @@ workers subscribe to paths based on their load balancing type
 #### Agent-based adaptive load balancing
 workers subscribe to ```lb/req/+/{topic}```  
 workers subscribe to ```lb/work/{group}/{wid}/{topic}```  
+workers subscribe to ```lb/dwork/+/{group}/+```  
 load balancer pub ```lb/req/{uuid}/{mtopic}```  
-workers respond to ```lb/rsp/{group}/{wid}/{uuid}/{mtopic}``` if they can do the work  
-the load balancer then pubs the ```(message)``` to ```lb/work/{group}/{wid}/{mtopic}``` to all first responding workers in each group  
+workers respond to ```lb/rsp/{group}/{wid}/{uuid}/{mtopic}``` if they can do the work, keep track that they're 'working' on ```{uuid}```  
+the load balancer then pubs the ```(message)``` to ```lb/work/{group}/{wid}/{mtopic}``` to all first responding workers in each group.  
+load balancer pub ```lb/dwork/{uuid}/{group}/{wid}``` to tell all the workers in the group who it chose   
+workers not chosen release their 'working' lock on ```{uuid}```  
 
 ### todo: other load balancing schemes
 
